@@ -54,7 +54,30 @@ public class BankAccountDAO {
     }
  
     /**
-     *  @Transactional là annotation của JPA để chỉ việc bắt đầu và kết thúc Transaction gắn với việc
+      Khài niệm transaction là khái niệm của SQL => vì thế đúng với cả JPA và Hibernate.
+      Transaction là chạy nhiều lệnh ở SQL server, nếu gặp lỗi thì server hỗ trợ rollback lại toàn bộ, ở client sẽ xuất ra exception khi gặp lỗi.
+      @transactional là của Springboot (ko phải của JPA), trc 1 function DAO để chỉ 1 transaction truy cập vào SQL server.
+      Springboot hỗ trợ auto scan dùng java reflection => sau đó chèn thêm phần code transaction vào trong DAO (để giảm code).
+      Vì thế @transactional hỗ trợ cả JPA, và Hibernate.
+      Nếu ko dùng @transaction của Springboot, thì với JPA phải dùng như sau:
+      
+        //để dùng transaction của JPA explicit 
+        UserTransaction utx = entityManager.getTransaction(); 
+
+		try { 
+		    utx.begin(); 
+		    //nhiều lệnh sql: update, insert, delete
+		    businessLogic();//xem code phía dưới viết lại gọn hơn
+		    
+		    utx.commit(); 
+		} catch(Exception ex) { 
+		    utx.rollback(); //cách này dễ debug khi gặp lỗi hơn cách dưới
+		    throw ex; 
+		} 
+
+     */
+    /**
+     *  @Transactional là annotation của Springboot ko phải của JPA để chỉ việc bắt đầu và kết thúc Transaction gắn với việc
      *  bắt đầu vào kết thúc 1 java function.
      *  Hibernate vẫn tận dụng các annotation của JPA
      */
@@ -77,7 +100,7 @@ public class BankAccountDAO {
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = BankTransactionException.class)
     public void sendMoney(Long fromAccountId, Long toAccountId, double amount) throws BankTransactionException {
  
-        addAmount(toAccountId, amount);
+        addAmount(toAccountId, amount);  //function này chứa @transactional, vì thế parent function sẽ ko tạo source transactional nữa
         addAmount(fromAccountId, -amount);
     }
  
