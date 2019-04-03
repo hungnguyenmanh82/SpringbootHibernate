@@ -16,7 +16,7 @@ import com.example.demo.entity.BankAccount;
 import com.example.demo.exception.BankTransactionException;
 import com.example.demo.model.BankAccountInfo;
  
-@Repository
+@Repository  //singleton
 @Transactional
 public class BankAccountDAO {
  
